@@ -1,0 +1,15 @@
+README
+
+Written in C and compiled with an attached Makefile.
+
+Objective was to implement a basic shell program similar to bash using system calls like execvp, fork, pipe, and dup. The shell must run basic commands such as ls, cd, cat, etc while supporting piping and input/output redirection.
+
+Shortcomings: It's not printing, but it completes the command after the shell program exited. I think it's waiting too long for something.
+
+Overview of implementation: 
+- prompt user for a command
+- parses command into tokens, which are labeled (input redirection, background, etc.)
+	In the parser, I included 3 sections. One implements spacing, the next split the command into tokens and labels, and the third looped through the tokens and set the flags for what the command included.
+
+- check for redirection or piping
+- fork the process and have child execute the command
