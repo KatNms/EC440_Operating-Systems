@@ -1,0 +1,71 @@
+Project 4
+
+Goal: implement a library that provides protected memory regions for threads which they can use as local storage.
+
+Remember:
+	threads share same memory address space and while it helps since threads can share info, one thread may also accidentally modify a value that another thread has stored in a variable. Therefore to protect the data from being overwritten by other threads, each thread needs a protected storage are that they can read from and write to (TLS)
+
+Implement
+
+int tls_create(unsigned int size)
+{ 
+	creates a local storage area for current executing thread. 
+	Returns 0 on success or -1 on error if a thread already has a local storage larger than 0 bytes
+
+}
+
+int tls_write(unsigned int offset, unsigned int length, char *buffer)
+{
+	reads length bytes starting from where the buffer points and writes them into the local storage area of the current executing thread.
+	Returns 0 on success and -1 on error if the function tries to write more data than the local storage area can hold or if there is no local storage area.
+		offset + length > size of local storage area
+
+}
+
+int tls_clone(pthread_t tid)
+{
+	Clones local storage area of target thread (identified with tid)
+	Returns 0 on success and -1 on error if the thread has no local storage are or when a thread already has a local storage area.
+
+	- copy on write approach: when a thread writes to LSA, the TLS library creates a private copy of the region that is written while the untouched areas remain shared.	
+	
+}
+
+Some hints and suggestions!
+
+-note that call pthread_exit if a thread tries to read or write to any LSA without useing tls_read or tls_write
+
+-note that mprotect can only assign coarse-grain permissions at the level of individual pages. This is another reason why it is convenient to create the local storage area as multiples of memory pages
+
+-note that an LSA can contain both shared pages and private pages. Thus, these pages are not always contiguous in memory, so when you use read/write that can span multiple pages you must break up these operations into acceses to individual pages
+
+
+
+-whenever a thread calls tls_read or tls_write, temporarily unprotect this threads LSA. So when thread 1 executes either function, thread 2 can access thread 1's LSA without being terminated.
+
+- thread 2 clones LSA of thread 1 (you can use getpagesize() to determine LSA size). Assume thread 1 writes one byte at the beginning of its LSA, for convenience you can copy the whole first page. So if 2*page-size is 4096 bytes, you can copy the first 4096 bytes. The 2nd page is still shared between thread 1 and 2.
+
+- create a LSA that cant be directly accessed by a thread. Use mmap which has 2 advantages. First, it can obtain memory that is aligned with the start of a page/allocates memory in multiples of page size. Second, it creates pages that have no read/write permissions.
+
+- to implement tls_read/write use mprotect. It lets you unprotect memory regions at the beginning of a read/write operation and reprotect when you're done.
+
+- when a thread accesses a protected memory page, use a signal handler (sigsegv) and terminate the current running thread. Your signal handler must kill the entire process and dump the core. Be wary of whether you have a seg fault caused by a thread that incorrectly accesses a LSA or if you're code's a piece of shit.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
