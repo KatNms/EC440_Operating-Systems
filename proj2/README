@@ -1,0 +1,9 @@
+README
+
+
+Project 2 for OS -- threads
+
+It passed all the tests! Yay (:
+
+I made a thread control block struct which was intialized per thread. Then made a runnable function which finds the next runnable thread. This was called in schedule(). Schedule jumps to the next thread if the current thread is done. Pthread_firsttime is used when a new thread is created to set the timer. Pthread_create just creates the thread, by first calling firsttime() -- the timer-- then getting the new thread id and allocating space. I allocated by mutliplying stack size by sizeof(void*). pthread_self just returns the current thread_id and pthread_exits declares the thread status to 'EXITED' and calls the schedule to exit the thread.
+
